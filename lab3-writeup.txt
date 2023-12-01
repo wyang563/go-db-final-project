@@ -1,0 +1,31 @@
+Locking Architecture - 
+
+To keep track of which TIDs had what locks I introduced 4 new data structures to the buffer pool struct:
+
+lock struct - represents a lock a TID can hold - it has a page attribute that represents the heapHash and the lock type (read or write)
+writeLocks - a map from a heapPage hash to a TID that currently holds a write lock on that heapPage hash
+readLocks - a map from a heapPage hash to a set of TIDs that currently hold read locks on that heapPage hash
+tidToLocks - a map from TIDs to an array of locks structs that the TID holds
+
+For writeLocks and readLocks I used a map to make it easier to simply find which locks a page has by indexing into the map. I included tidToLocks
+so that when we had to commit or abort a TID, we could easily find which locks were assosciated with the TID and remove them from the readLocks and
+writeLocks maps. 
+
+Deadlock Detection - 
+
+To detect conflicts, I added a conflictGraph data structure to the BufferPool struct which had an adjacency list representation of a graph. In this graph, 
+the vertices were represented by certain TIDs and we drew an edge between tid1 and tid2 if tid1 depended on tid2 releasing its locks to proceed. In this way,
+we are able to detect deadlocks via simply checking if there is a cycle in conflictGraph. 
+
+I used this representation since I wouldn't have to construct an entire graph each time I wanted to check for deadlocks. Instead, I could incrementally add a node
+if a new tid was being used, and add edges if the tid needed to wait for readLocks/writeLocks from other tids to be released. DFS is O(V + E) so each graph check was 
+relatively fast since there aren't that many TIDs in the graph at once in the test cases. 
+
+API Changes/Incomplete Parts of Code -
+
+No API changes and no incomplete parts of code.
+
+Time Spent on Lab - 
+
+20 hours
+

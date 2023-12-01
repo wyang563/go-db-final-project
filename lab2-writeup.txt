@@ -1,0 +1,40 @@
+Design Decisions - 
+
+Join Op Implementation - 
+
+In the join iterator - I implemented a nested loop join. The implementation in the iterator was done as
+follows. Firstly, I got the outer iterator for the outer file and inner iterator for the inner file in 
+the nested join loop. Next, I iterated through the outer loop, and for each one, I iterated through the 
+inner iterator one tuple at a time. When the inner iterator returned nil (it reached the end), I iterated on
+the outer iter. If there was a match according to the condition for a given inner and outer tuple, I would return
+the joined version of the tuple.
+
+Aggregator Op Implementation - 
+
+I did not deviate from the specs given for the agg op functions given in the lab. For extractGroupByKeyTuple
+I looped through a.groupByFields and extracted each groupVal from each groupExpression in a.groupByFields, and then
+creating a tuple with Fields being from the list of groupVals in the for loop above and the tuple desc being from
+a.Descriptor(). In getFinalizedTuplesIterator for each element in groupByList I calculated a final resulting tuple res
+to return created by joining the aggregate value we found for the operation from aggState key and the groupByTuple we're
+currently on in the groupByList.
+
+Distinct Implementation in Project - 
+
+I implemented distinct by storing it as an attribute in the Project Struct, with distinct being true if we want all returned
+values to be distinct. In the iterator, I kept a map called seen of all the tuple keys assosciated with tuples we'd already iterated over.
+If a tuple the child iterator returns was in the seen map then we knew it was already returned, so we skipped over it, which ensures all 
+returned elements are distinct.
+
+Changes to API - 
+
+I didn't make any changes to the API. 
+
+Incomplete Parts of Code - 
+
+Currently there are bugs assosciated with reading files that result from the Easy Parser test.
+
+Time Spent - 
+
+10 hours
+
+
