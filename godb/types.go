@@ -49,12 +49,12 @@ type Page interface {
 }
 
 type DBFile interface {
-	insertTuple(t *Tuple, tid TransactionID) error
-	deleteTuple(t *Tuple, tid TransactionID) error
+	// insertTuple(t *Tuple, tid TransactionID) error
+	// deleteTuple(t *Tuple, tid TransactionID) error
 
 	//methods used by buffer pool to manage retrieval of pages
 	readPage(pageNo int) (*Page, error)
-	flushPage(page *Page) error
+	// flushPage(page *Page) error
 	pageKey(pgNo int) any //uint64
 
 	Operator
