@@ -19,6 +19,10 @@ type BTreeFile struct {
 	divideField	string
 }
 
+func NewBtreeFile(fromFile string, td *TupleDesc, root *Page, divideField string) (*BTreeFile, error) {
+	
+}
+
 func (bf *BTreeFile) pageKey(pageValue int) any {
 	return btreeHash{FileName: bf.file, pageValue: pageValue};
 }
@@ -29,7 +33,7 @@ func (bf *BTreeFile) readPage(pageNo int) (*Page, error) {
 }
 
 func (bf *BTreeFile) readPageByKey(pageVal btreeHash) (*Page, error) {
-	
+
 }
 
 func (bf *BTreeFile) Descriptor() *TupleDesc {

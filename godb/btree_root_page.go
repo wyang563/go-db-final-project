@@ -37,7 +37,7 @@ func (brp *btreeRootPage) tupleIter() func() (*Tuple, error) {
 }
 
 // Traverses tree given Tuple value and returns leaf page assosciated with tuple
-func (bip *btreeInternalPage) traverse(t *Tuple) *btreeLeafPage {
+func (bip *btreeRootPage) traverse(t *Tuple) *btreeLeafPage {
 
 }
 

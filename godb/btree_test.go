@@ -6,7 +6,7 @@ import (
 )
 
 
-func makeBTreeTestVars() (TupleDesc, Tuple, Tuple, *HeapFile, *BufferPool, TransactionID) {
+func makeBTreeTestVars() (TupleDesc, Tuple, Tuple, *BTreeFile, TransactionID) {
 	var td = TupleDesc{Fields: []FieldType{
 		{Fname: "name", Ftype: StringType},
 		{Fname: "age", Ftype: IntType},
@@ -25,7 +25,7 @@ func makeBTreeTestVars() (TupleDesc, Tuple, Tuple, *HeapFile, *BufferPool, Trans
 			StringField{"george jones"},
 			IntField{999},
 		}}
-
+	bf, err := New
 	bp := NewBufferPool(3)
 	os.Remove(TestingFile)
 	hf, err := NewHeapFile(TestingFile, &td, bp)
