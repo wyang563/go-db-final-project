@@ -1,9 +1,7 @@
 package godb
 
 import (
-	"bytes"
-	"encoding/binary"
-	"errors"
+
 )
 
 type btreeLeafPage struct {
@@ -20,7 +18,7 @@ type btreeLeafPage struct {
 
 // Construct a new leaf page
 func newLeafPage(desc *Tuple, leftPtr *Page, rightPtr *Page, parent *Page, pageNo int, divideField string, f *BTreeFile) *btreeLeafPage {
-
+	return nil;
 }
 
 // Page method - return whether or not the page is dirty
@@ -42,7 +40,7 @@ func (blp *btreeLeafPage) getFile() *DBFile {
 
 // Return a function that iterates through the tuples of the leaf page
 func (blp *btreeLeafPage) tupleIter() func() (*Tuple, error) {
-
+	return nil;
 }
 
 // Traverses tree given Tuple value and returns leaf page assosciated with tuple

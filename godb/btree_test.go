@@ -6,7 +6,6 @@ import (
 	"os"
 )
 
-
 func makeBTreeTestVars() (TupleDesc, []Tuple, *BTreeFile, TransactionID) {
 	var td = TupleDesc{Fields: []FieldType{
 		{Fname: "name", Ftype: StringType},
@@ -37,7 +36,14 @@ func makeBTreeTestVars() (TupleDesc, []Tuple, *BTreeFile, TransactionID) {
 	brpp.btreeFile = bf;
 	tid := NewTID();
 	return td, tupleList, bf, tid;
-
 }
+
+func TestEmptyBTree(t *testing.T) {
+	
+}
+
+
+
+
 
 

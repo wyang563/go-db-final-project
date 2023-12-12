@@ -19,7 +19,7 @@ type BTreeFile struct {
 }
 
 func NewBtreeFile(fromFile string, td *TupleDesc, root *Page, divideField string) (*BTreeFile, error) {
-
+	return nil, nil;
 }
 
 func (bf *BTreeFile) pageKey(pageValue int) any {
@@ -28,11 +28,11 @@ func (bf *BTreeFile) pageKey(pageValue int) any {
 
 // reads page given a specific pageKey hash
 func (bf *BTreeFile) readPage(pageNo int) (*Page, error) {
-
+	return nil, nil;
 }
 
 func (bf *BTreeFile) readPageByKey(pageVal btreeHash) (*Page, error) {
-
+	return nil, nil;
 }
 
 func (bf *BTreeFile) Descriptor() *TupleDesc {
@@ -40,5 +40,18 @@ func (bf *BTreeFile) Descriptor() *TupleDesc {
 }
 
 func (bf *BTreeFile) Iterator(tid TransactionID) (func() (*Tuple, error), error) {
+	return nil, nil;
+}
 
+// dummy functions just so we implement DBFile
+func (bf *BTreeFile) flushPage(page *Page) error {
+	return nil;
+}
+
+func (bf *BTreeFile) insertTuple(t *Tuple, tid TransactionID) error {
+	return nil;
+}
+
+func (bf *BTreeFile) deleteTuple(t *Tuple, tid TransactionID) error {
+	return nil;
 }
