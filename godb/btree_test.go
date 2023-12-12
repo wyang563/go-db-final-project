@@ -4,7 +4,6 @@ import (
 	"testing"
 	"strconv"
 	"os"
-	"error"
 )
 
 func makeBTreeTestVars(b_factor int) (TupleDesc, []Tuple, *BTreeFile, TransactionID) {
