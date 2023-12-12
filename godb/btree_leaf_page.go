@@ -17,7 +17,7 @@ type btreeLeafPage struct {
 }
 
 // Construct a new leaf page
-func newLeafPage(desc *Tuple, leftPtr *Page, rightPtr *Page, parent *Page, pageNo int, divideField string, f *BTreeFile) *btreeLeafPage {
+func newLeafPage(desc *TupleDesc, leftPtr *Page, rightPtr *Page, parent *Page, pageNo int, divideField string, f *BTreeFile) *btreeLeafPage {
 	return nil;
 }
 

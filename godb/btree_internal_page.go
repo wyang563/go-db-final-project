@@ -11,7 +11,7 @@ type btreeInternalPage struct {
 }
 
 // Construct a new internal page
-func newInternalPage(desc *Tuple, parent *Page, divideField string, f *BTreeFile) *btreeInternalPage {
+func newInternalPage(desc *TupleDesc, parent *Page, divideField string, f *BTreeFile) *btreeInternalPage {
 	return nil;
 }
 
