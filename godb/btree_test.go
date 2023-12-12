@@ -39,7 +39,7 @@ func makeBTreeTestVars(b_factor int) (TupleDesc, []Tuple, *BTreeFile, Transactio
 }
 
 func TestEmptyBTree(t *testing.T) {
-	td, _, bf, tid := makeBTreeTestVars();
+	makeBTreeTestVars(1);
 	// run iterator to check nothing is returned
 	
 }
