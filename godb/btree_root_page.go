@@ -10,7 +10,7 @@ type btreeRootPage struct {
 }
 
 // Construct a new root page
-func newRootPage(desc *Tuple, divideField string, f *BTreeFile) *btreeRootPage {
+func newRootPage(desc *TupleDesc, divideField string, f *BTreeFile) *btreeRootPage {
 
 }
 

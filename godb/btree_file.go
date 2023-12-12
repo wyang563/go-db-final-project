@@ -15,12 +15,11 @@ type BTreeFile struct {
 	file		string
 	desc		*TupleDesc 
 	root		*Page   // root page of BTreeFile, either btree_root page or btree_leaf page
-	height		int		// height of B+Tree 
 	divideField	string
 }
 
 func NewBtreeFile(fromFile string, td *TupleDesc, root *Page, divideField string) (*BTreeFile, error) {
-	
+
 }
 
 func (bf *BTreeFile) pageKey(pageValue int) any {

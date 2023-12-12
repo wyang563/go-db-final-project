@@ -6,7 +6,7 @@ import (
 )
 
 
-func makeBTreeTestVars() (TupleDesc, Tuple, Tuple, *BTreeFile, TransactionID) {
+func makeBTreeTestVars() (TupleDesc, Tuple, Tuple, *BTreeFile, *BufferPool, TransactionID) {
 	var td = TupleDesc{Fields: []FieldType{
 		{Fname: "name", Ftype: StringType},
 		{Fname: "age", Ftype: IntType},
@@ -25,10 +25,11 @@ func makeBTreeTestVars() (TupleDesc, Tuple, Tuple, *BTreeFile, TransactionID) {
 			StringField{"george jones"},
 			IntField{999},
 		}}
-	bf, err := New
-	bp := NewBufferPool(3)
+
 	os.Remove(TestingFile)
-	hf, err := NewHeapFile(TestingFile, &td, bp)
+	var brp *Page = (newRootPage(&td, "age", nil)).(*Page);
+	brp = brp.(Page);
+	bf, err := NewBtreeFile(TestingFile, &td, brp, "age");
 	if err != nil {
 		print("ERROR MAKING TEST VARS, BLARGH")
 		panic(err)
