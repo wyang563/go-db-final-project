@@ -39,9 +39,35 @@ func makeBTreeTestVars(b_factor int) (TupleDesc, []Tuple, *BTreeFile, Transactio
 }
 
 func TestEmptyBTree(t *testing.T) {
-	makeBTreeTestVars(1);
+	_, _, bf, tid := makeBTreeTestVars(2);
 	// run iterator to check nothing is returned
-	
+	iter, _ := bf.Iterator(tid);
+	tup, _ := iter();
+	if tup != nil {
+		t.Errorf("expected no tuples to be returned");
+	}
+}
+
+func TestOneElementBTree(t *testing.T) {
+	td, tupleList, bf, tid := makeBTreeTestVars(4);
+	// create 1 element btree
+	leafPage := newLeafPage(&td, nil, nil, bf.root, 0, bf.divideField, bf);
+	leafPage.data = append(leafPage.data, &(tupleList[0]));
+	var rootNode *btreeRootPage = (*bf.root).(*btreeRootPage);
+	var leaf Page = (Page)(leafPage);
+	rootNode.nodes = append(rootNode.nodes, &item{num: 2, leftPtr: &leaf, rightPtr: nil});
+	count := 0;
+	iter, _ := bf.Iterator(tid);
+	for {
+		tup, _ := iter();
+		if tup == nil {
+			break;
+		}
+		count++;
+		if count > 1 {
+			t.Errorf("expected there to be only 1 tuple");
+		}
+	}
 }
 
 
