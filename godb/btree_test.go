@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func makeBTreeTestVars() (TupleDesc, []Tuple, *BTreeFile, TransactionID) {
+func makeBTreeTestVars(b_factor int) (TupleDesc, []Tuple, *BTreeFile, TransactionID) {
 	var td = TupleDesc{Fields: []FieldType{
 		{Fname: "name", Ftype: StringType},
 		{Fname: "age", Ftype: IntType},
@@ -26,7 +26,7 @@ func makeBTreeTestVars() (TupleDesc, []Tuple, *BTreeFile, TransactionID) {
 	var brptmp Page = (Page)(brpp);
 	var brp *Page = &brptmp;
 	// create new btree file
-	bf, err := NewBtreeFile(TestingFile, &td, brp, "age");
+	bf, err := NewBtreeFile(TestingFile, &td, brp, b_factor, "age");
 	
 	if err != nil {
 		print("ERROR MAKING TEST VARS, BLARGH");
@@ -39,6 +39,8 @@ func makeBTreeTestVars() (TupleDesc, []Tuple, *BTreeFile, TransactionID) {
 }
 
 func TestEmptyBTree(t *testing.T) {
+	td, _, bf, tid := makeBTreeTestVars();
+	// run iterator to check nothing is returned
 	
 }
 

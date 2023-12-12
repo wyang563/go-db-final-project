@@ -15,10 +15,11 @@ type BTreeFile struct {
 	file		string
 	desc		*TupleDesc 
 	root		*Page   // root page of BTreeFile, either btree_root page or btree_leaf page
+	b_factor	int
 	divideField	string
 }
 
-func NewBtreeFile(fromFile string, td *TupleDesc, root *Page, divideField string) (*BTreeFile, error) {
+func NewBtreeFile(fromFile string, td *TupleDesc, root *Page, b_factor int, divideField string) (*BTreeFile, error) {
 	return nil, nil;
 }
 
