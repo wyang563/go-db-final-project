@@ -8,6 +8,7 @@ type btreeInternalPage struct {
 	desc		*TupleDesc
 	dirty		bool
 	divideField	string
+	height		int
 }
 
 // Construct a new internal page
@@ -33,8 +34,8 @@ func (bip *btreeInternalPage) getFile() *DBFile {
 }
 
 // Return a function that recursively call iterators of child nodes to then get tuples
-func (bip *btreeInternalPage) tupleIter() func() (*Tuple, error) {
-	return nil;
+func (bip *btreeInternalPage) tupleIter() (func() (*Tuple, error), error) {
+	return nil, nil;
 }
 
 // Traverses tree given Tuple value and returns leaf page assosciated with tuple

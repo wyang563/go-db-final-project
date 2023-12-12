@@ -15,6 +15,7 @@ type btreeLeafPage struct {
 	pageNo		int
 	dirty		bool
 	divideField	string
+	height		int
 }
 
 // Construct a new leaf page
@@ -43,7 +44,7 @@ func (blp *btreeLeafPage) getFile() *DBFile {
 }
 
 // Return a function that iterates through the tuples of the leaf page
-func (blp *btreeLeafPage) tupleIter() func() (*Tuple, error) {
+func (blp *btreeLeafPage) tupleIter() (func() (*Tuple, error), error) {
 	n := 0;
 	return func() (*Tuple, error) {
 		if n >= len(blp.data) {
@@ -52,11 +53,11 @@ func (blp *btreeLeafPage) tupleIter() func() (*Tuple, error) {
 		tupVal := blp.data[n];
 		n++;
 		return tupVal, nil;
-	}
+	}, nil;
 }
 
 // Traverses tree given Tuple value and returns leaf page assosciated with tuple
-func (bip *btreeLeafPage) traverse(t *Tuple) *btreeLeafPage {
-	return bip;
+func (blp *btreeLeafPage) traverse(pageKey btreeHash) *btreeLeafPage {
+	return blp;
 }
 

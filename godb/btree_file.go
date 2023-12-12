@@ -12,11 +12,12 @@ type btreeHash struct {
 }
 
 type BTreeFile struct {
-	file		string
-	desc		*TupleDesc 
-	root		*Page   // root page of BTreeFile, either btree_root page or btree_leaf page
-	b_factor	int
-	divideField	string
+	file			string
+	desc			*TupleDesc 
+	root			*Page   // root page of BTreeFile, either btree_root page or btree_leaf page
+	b_factor		int
+	divideField		string
+	totalHeight		int
 }
 
 func NewBtreeFile(fromFile string, td *TupleDesc, root *Page, b_factor int, divideField string) (*BTreeFile, error) {

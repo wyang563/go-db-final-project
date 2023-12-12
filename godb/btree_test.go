@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"os"
 )
+// TODO - change test case btrees such that they are rootpage, internalpage, leafpage (makes coding iterators easier)
 
 func makeBTreeTestVars(b_factor int) (TupleDesc, []Tuple, *BTreeFile, TransactionID) {
 	var td = TupleDesc{Fields: []FieldType{
