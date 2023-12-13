@@ -6,7 +6,6 @@ import (
 	"os"
 	"fmt"
 )
-// TODO - change test case btrees such that they are rootpage, internalpage, leafpage (makes coding iterators easier)
 
 func makeBTreeTestVars(b_factor int) (TupleDesc, []*Tuple, *BTreeFile, TransactionID, FieldExpr) {
 	var td = TupleDesc{Fields: []FieldType{
@@ -20,7 +19,7 @@ func makeBTreeTestVars(b_factor int) (TupleDesc, []*Tuple, *BTreeFile, Transacti
 	bf, err := NewBtreeFile(TestingFile, &td, b_factor, divideField);
 	tid := NewTID();
 	// create list of tuples we can use in future
-	for i := 0; i < 30; i++ {
+	for i := 0; i < 1000; i++ {
 		name := "sam" + strconv.Itoa(i);
 		tup := Tuple{Desc: td, 
 					Fields: []DBValue{
@@ -30,7 +29,6 @@ func makeBTreeTestVars(b_factor int) (TupleDesc, []*Tuple, *BTreeFile, Transacti
 		tupleList = append(tupleList, &tup);
 		
 	}
-	bf.init(tupleList)
 	os.Remove(TestingFile)
 	
 	if err != nil {
@@ -50,35 +48,29 @@ func TestEmptyBTree(t *testing.T) {
 	}
 }
 
-// func TestOneElementBTree(t *testing.T) {
-// 	td, tupleList, bf, tid := makeBTreeTestVars(4);
-// 	// create 1 element btree
-// 	leafPage, err := newLeafPage(&td, nil, nil, bf.root, 0, bf.divideField, bf, tid);
+func TestOneElementBTree(t *testing.T) {
+	_, tups, bf, tid, _ := makeBTreeTestVars(4);
+	// create 1 element btree
+	var sampleTups []*Tuple;
+	sampleTups = append(sampleTups, tups[0]);
+	bf.init(sampleTups);
+	count := 0;
+	iter, _ := bf.Iterator(tid);
+	for {
+		tup, _ := iter();
+		if tup == nil {
+			break;
+		}
+		count++;
+		if count > 1 {
+			t.Errorf("expected there to be only 1 tuple");
+		}
+	}
+}
 
-// 	if err != nil {
-// 		t.Errorf("Error creating leaf page:" + err.Error())
-// 	}
-
-// 	leafPage.data = append(leafPage.data, &(tupleList[0]));
-// 	var rootNode *btreeRootPage = (*bf.root).(*btreeRootPage);
-// 	var leaf Page = (Page)(leafPage);
-// 	rootNode.nodes = append(rootNode.nodes, &item{num: 2, leftPtr: &leaf, rightPtr: nil});
-// 	count := 0;
-// 	iter, _ := bf.Iterator(tid);
-// 	for {
-// 		tup, _ := iter();
-// 		if tup == nil {
-// 			break;
-// 		}
-// 		count++;
-// 		if count > 1 {
-// 			t.Errorf("expected there to be only 1 tuple");
-// 		}
-// 	}
-// }
-
-func testBTreeIterator(b_factor int) error {
+func btreeIteratorHelper(b_factor int) error {
 	_, tups, bf, tid, _ := makeBTreeTestVars(b_factor)
+	bf.init(tups);
 	tupset := make(map[int64] int)
 
 	for _, tup := range tups {
@@ -97,7 +89,7 @@ func testBTreeIterator(b_factor int) error {
 	for {
 		tup, err := btree_it()
 
-		fmt.Println("tup ,err", tup, err)
+		// fmt.Println("tup ,err", tup, err)
 
 		if tup == nil {
 			break
@@ -121,19 +113,61 @@ func testBTreeIterator(b_factor int) error {
 		curr_age++
 	}
 
-	if unique_tups != 30 {
-		fmt.Println("unique tups:", unique_tups)
+	if unique_tups != len(tups) {
+		// fmt.Println("unique tups:", unique_tups)
 		return fmt.Errorf("Number of tuples is incorrect")
 	}
 
 	return nil
 }
 
+// tests BTree on a wide range of branching factors on inserting 30 tuples
 func TestBTreeIterator(t *testing.T) {
 	for b_factor := 2; b_factor < 10; b_factor++ {
-		if err := testBTreeIterator(b_factor); err != nil {
+		if err := btreeIteratorHelper(b_factor); err != nil {
 			t.Errorf(err.Error())
 		}
+	}
+}
+
+// Range Scan Tests
+
+// Tests whether traversal returns correct leaf page
+func TestBTreeTraversal(t *testing.T) {
+	_, tups, bf, _, _ := makeBTreeTestVars(3);
+	bf.init(tups);
+	// iterate over all tuples in list and see if we can find them all
+	for i := 0; i < len(tups); i++ {
+		searchTup := tups[i];
+		resPage := bf.findLeafPage(searchTup);
+		found := false;
+		for _, tup := range resPage.data {
+			if (tup.equals(searchTup)) {
+				found = true;
+			}
+		}
+		if !found {
+			fmt.Errorf("Did not find Tuple during Traversal");
+		}
+	}
+}
+
+// Tests whether B+Tree implementation can scan range that takes up entire range of data values
+func TestBTreeEntireRangeScan(t *testing.T) {
+	_, tups, bf, tid, _ := makeBTreeTestVars(10);
+	bf.init(tups);
+	left := tups[0];
+	right := tups[len(tups) - 1];
+	rangeIter, _ := bf.SelectRange(left, right, bf.divideField, tid);
+	count := 0;
+	tup, _ := rangeIter();
+	for tup != nil {
+		// fmt.Println(count, tup);
+		tup, _ = rangeIter();
+		count++;
+	}
+	if count != len(tups) {
+		fmt.Errorf("Range Scan Over All Elements Incorrect");
 	}
 }
 

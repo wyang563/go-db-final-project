@@ -1,7 +1,7 @@
 package godb
 
 import (
-	"fmt"
+	// "fmt"
 )
 
 type btreeInternalPage struct {
@@ -40,7 +40,7 @@ func (bip *btreeInternalPage) getFile() *DBFile {
 
 // Initializes root page by creating internal and leaf pages as necessary
 func (bip *btreeInternalPage) init(tups []*Tuple) error {
-	fmt.Println("internal:", tups)
+	// fmt.Println("internal:", tups)
 	// make a list of tuples we split on: first element of each partition of tups starting from the second partition
 	// make a list of BTreePages
 	split := make([]*Tuple, 0)
@@ -73,8 +73,17 @@ func (bip *btreeInternalPage) init(tups []*Tuple) error {
 			pg = (BTreePage)(newInternalPage(bip.desc, &rpage, bip.divideField, bip.btreeFile))
 			// TODO: when calling init on internal page, we need a way to find the page number
 		} else {
-			pg = (BTreePage)(newLeafPage(bip.desc, nil, nil, &rpage, bip.btreeFile.Leaves(), bip.divideField, bip.btreeFile))
-			bip.btreeFile.LeafInc()
+			bip.btreeFile.LeafPages = append(
+				bip.btreeFile.LeafPages, 
+				newLeafPage(bip.desc, nil, nil, &rpage, bip.btreeFile.Leaves(), bip.divideField, bip.btreeFile),
+			)
+
+			pg = (BTreePage)(bip.btreeFile.LeafPages[bip.btreeFile.Leaves()-1])
+			
+			if bip.btreeFile.Leaves() > 1 {
+				bip.btreeFile.LeafPages[bip.btreeFile.Leaves()-2].rightPtr = bip.btreeFile.LeafPages[bip.btreeFile.Leaves()-1]
+				bip.btreeFile.LeafPages[bip.btreeFile.Leaves()-1].leftPtr = bip.btreeFile.LeafPages[bip.btreeFile.Leaves()-2]
+			}
 		}
 
 		page = &pg
@@ -84,7 +93,7 @@ func (bip *btreeInternalPage) init(tups []*Tuple) error {
 
 	// make items and link together
 	for i := 0; i < b - 1; i++ {
-		fmt.Println("bip:", split, i, pageList)
+		// fmt.Println("bip:", split, i, pageList)
 		bip.nodes = append(bip.nodes, &item{compareVal: split[i], leftPtr: pageList[i], rightPtr: pageList[i+1]})
 	}
 
@@ -149,7 +158,7 @@ func (bip *btreeInternalPage) tupleIter() (func() (*Tuple, error), error) { // T
 
 			nodeIterNum++
 
-			if curIter == nil || nodeIterNum > len(bip.nodes) {
+			if curIter == nil {
 				return nil, nil;
 			}
 
@@ -172,7 +181,7 @@ func (bip *btreeInternalPage) traverse(t *Tuple) *btreeLeafPage {
 		}
 	}
 	// otherwise element is at right most end
-	nextPage := *(bip.nodes[i].rightPtr)
+	nextPage := *(bip.nodes[i - 1].rightPtr)
 	return nextPage.traverse(t);
 }
 

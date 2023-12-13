@@ -3,14 +3,14 @@ package godb
 import (
 	"errors"
 	"sort"
-	"fmt"
+	// "fmt"
 )
 
 type btreeLeafPage struct {
 	b_factor    int
 	data        []*Tuple
-	leftPtr     *BTreePage
-	rightPtr    *BTreePage
+	leftPtr     *btreeLeafPage
+	rightPtr    *btreeLeafPage
 	parent      *BTreePage
 	btreeFile   *BTreeFile
 	desc        *TupleDesc
@@ -20,7 +20,7 @@ type btreeLeafPage struct {
 }
 
 // Construct a new leaf page
-func newLeafPage(desc *TupleDesc, leftPtr *BTreePage, rightPtr *BTreePage, parent *BTreePage, pageNo int, divideField FieldExpr, f *BTreeFile) *btreeLeafPage { // TODO: rewrite so that we take in a list of tuples rather than using the btreefile iterator
+func newLeafPage(desc *TupleDesc, leftPtr *btreeLeafPage, rightPtr *btreeLeafPage, parent *BTreePage, pageNo int, divideField FieldExpr, f *BTreeFile) *btreeLeafPage { // TODO: rewrite so that we take in a list of tuples rather than using the btreefile iterator
 	var data []*Tuple = make([]*Tuple, 0)
 
 	return &btreeLeafPage{b_factor: f.b_factor, data: data, leftPtr: leftPtr, rightPtr: rightPtr,
@@ -47,7 +47,7 @@ func (blp *btreeLeafPage) getFile() *DBFile {
 
 // Initializes root page by creating internal and leaf pages as necessary
 func (blp *btreeLeafPage) init(tups []*Tuple) error {
-	fmt.Println("leaf:", tups)
+	// fmt.Println("leaf:", tups)
 	blp.data = tups
 	return nil
 }

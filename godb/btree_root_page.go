@@ -1,7 +1,7 @@
 package godb
 
 import (
-	"fmt"
+	// "fmt"
 )
 
 type btreeRootPage struct {
@@ -27,7 +27,7 @@ func (brp *btreeRootPage) isDirty() bool {
 
 // Initializes root page by creating internal and leaf pages as necessary
 func (brp *btreeRootPage) init(tups []*Tuple) error {
-	fmt.Println("root:", tups)
+	// fmt.Println("root:", tups)
 	// make a list of tuples we split on: first element of each partition of tups starting from the second partition
 	// make a list of BTreePages
 	split := make([]*Tuple, 0)
@@ -60,8 +60,17 @@ func (brp *btreeRootPage) init(tups []*Tuple) error {
 			pg = (BTreePage)(newInternalPage(brp.desc, &rpage, brp.divideField, brp.btreeFile))
 			// TODO: when calling init on internal page, we need a way to find the page number
 		} else {
-			pg = (BTreePage)(newLeafPage(brp.desc, nil, nil, &rpage, brp.btreeFile.Leaves(), brp.divideField, brp.btreeFile))
-			brp.btreeFile.LeafInc()
+			brp.btreeFile.LeafPages = append(
+				brp.btreeFile.LeafPages, 
+				newLeafPage(brp.desc, nil, nil, &rpage, brp.btreeFile.Leaves(), brp.divideField, brp.btreeFile),
+			)
+
+			pg = (BTreePage)(brp.btreeFile.LeafPages[brp.btreeFile.Leaves()-1])
+			
+			if brp.btreeFile.Leaves() > 1 {
+				brp.btreeFile.LeafPages[brp.btreeFile.Leaves()-2].rightPtr = brp.btreeFile.LeafPages[brp.btreeFile.Leaves()-1]
+				brp.btreeFile.LeafPages[brp.btreeFile.Leaves()-1].leftPtr = brp.btreeFile.LeafPages[brp.btreeFile.Leaves()-2]
+			}
 		}
 
 		page = &pg
@@ -145,7 +154,7 @@ func (brp *btreeRootPage) tupleIter() (func() (*Tuple, error), error) { // TODO:
 				return nil, err
 			}
 			nodeIterNum++
-			if curIter == nil || nodeIterNum > len(brp.nodes) {
+			if curIter == nil  {
 				return nil, nil
 			}
 			tup, _ = curIter()
@@ -167,6 +176,6 @@ func (brp *btreeRootPage) traverse(t *Tuple) *btreeLeafPage {
 		}
 	}
 	// otherwise element is at right most end
-	nextPage := *(brp.nodes[i].rightPtr)
+	nextPage := *(brp.nodes[i - 1].rightPtr)
 	return nextPage.traverse(t);
 }
