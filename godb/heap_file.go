@@ -366,6 +366,46 @@ func (f *HeapFile) Iterator(tid TransactionID) (func() (*Tuple, error), error) {
 	}, nil
 }
 
+// iterator for range query --- FieldType is how we project
+func (f *HeapFile) SelectRange(left, right *Tuple, compareField FieldExpr, tid TransactionID) (func() (*Tuple, error), error) {
+	iter, err := f.Iterator(tid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var tup *Tuple
+	var tuperr error
+
+	tupInRange := func(tup *Tuple) bool {
+		leftCompare, errl := tup.compareField(left, &compareField)
+		rightCompare, errr := tup.compareField(right, &compareField)
+
+		if errl != nil {
+			fmt.Println("Error comparing left:", errl.Error())
+		}
+		if errr != nil {
+			fmt.Println("Error comparing right:", errr.Error())
+		}
+
+		return (leftCompare != OrderedLessThan) && (rightCompare != OrderedGreaterThan) // check whether within inclusive range
+	}
+
+	return func() (*Tuple, error) {
+		for tup, tuperr = iter(); tuperr == nil && tup != nil && (tupInRange(tup) == false); tup, tuperr = iter() {}
+
+		if tuperr != nil {
+			return nil, tuperr
+		}
+
+		if tup == nil {
+			return nil, nil
+		}
+
+		return tup, nil
+	}, nil
+}
+
 // internal strucuture to use as key for a heap page
 type heapHash struct {
 	FileName string
