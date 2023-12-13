@@ -72,7 +72,8 @@ func (bip *btreeInternalPage) init(tups []*Tuple) error {
 			pg = (BTreePage)(newInternalPage(bip.desc, &rpage, bip.divideField, bip.btreeFile))
 			// TODO: when calling init on internal page, we need a way to find the page number
 		} else {
-			pg = (BTreePage)(newLeafPage(bip.desc, nil, nil, &rpage, i+1, bip.divideField, bip.btreeFile))
+			pg = (BTreePage)(newLeafPage(bip.desc, nil, nil, &rpage, bip.btreeFile.Leaves(), bip.divideField, bip.btreeFile))
+			bip.btreeFile.LeafInc()
 		}
 
 		page = &pg

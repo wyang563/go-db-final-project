@@ -31,6 +31,7 @@ type BTreeFile struct {
 	b_factor		int
 	divideField		FieldExpr
 	totalHeight		int
+	leafNum			int
 }
 
 // Make btreeRootPage when making BtreeFile
@@ -51,6 +52,14 @@ func (bf *BTreeFile) pageKey(pageValue int) any {
 
 func (bf *BTreeFile) setRootPage(page *btreeRootPage) {
 	bf.root = page
+}
+
+func (bf *BTreeFile) LeafInc() {
+	bf.leafNum++
+}
+
+func (bf *BTreeFile) Leaves() int {
+	return bf.leafNum
 }
 
 // reads page given a specific pageKey hash
