@@ -1,6 +1,7 @@
 package godb
 
 import (
+	"fmt"
 )
 
 type btreeRootPage struct {
@@ -27,6 +28,53 @@ func (brp *btreeRootPage) isDirty() bool {
 
 // Initializes root page by creating internal and leaf pages as necessary
 func (brp *btreeRootPage) init(tups []*Tuple) error {
+	fmt.Println("root:", tups)
+	// make a list of tuples we split on: first element of each partition of tups starting from the second partition
+	// make a list of BTreePages
+	split := make([]*Tuple, 0)
+	pageList := make([]*BTreePage, 0)
+
+	psize := len(tups)/brp.btreeFile.b_factor
+	var b int = brp.btreeFile.b_factor // Golang min requires upgrading version
+	if len(tups) < b {
+		b = len(tups)
+	}
+
+	for i := 0; i < b; i++ {
+		if i > 0 {
+			split = append(split, tups[i*psize])
+		}
+
+		var part []*Tuple
+		var pg BTreePage
+		var page *BTreePage
+
+		if i == b - 1 {
+			part = tups[i*psize:]
+		} else {
+			part = tups[i*psize:(i+1)*psize]
+		}
+
+		rpage := (BTreePage)(brp)
+
+		if psize > b {
+			pg = (BTreePage)(newInternalPage(brp.desc, &rpage, brp.divideField, brp.btreeFile))
+			// TODO: when calling init on internal page, we need a way to find the page number
+		} else {
+			pg = (BTreePage)(newLeafPage(brp.desc, nil, nil, &rpage, i+1, brp.divideField, brp.btreeFile))
+		}
+
+		page = &pg
+		fmt.Println("page:", pg, page)
+		pg.init(part)
+		pageList = append(pageList, page)
+	}
+
+	// make items and link together
+	for i := 0; i < b - 1; i++ {
+		brp.nodes = append(brp.nodes, &item{compareVal: split[i+1], leftPtr: pageList[i], rightPtr: pageList[i+1]})
+	}
+
 	return nil
 }
 

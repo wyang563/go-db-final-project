@@ -3,6 +3,7 @@ package godb
 import (
 	"errors"
 	"sort"
+	"fmt"
 )
 
 type btreeLeafPage struct {
@@ -20,12 +21,12 @@ type btreeLeafPage struct {
 }
 
 // Construct a new leaf page
-func newLeafPage(desc *TupleDesc, leftPtr *BTreePage, rightPtr *BTreePage, parent *BTreePage, pageNo int, divideField string, f *BTreeFile, tid TransactionID) (*btreeLeafPage, error) { // TODO: rewrite so that we take in a list of tuples rather than using the btreefile iterator
+func newLeafPage(desc *TupleDesc, leftPtr *BTreePage, rightPtr *BTreePage, parent *BTreePage, pageNo int, divideField string, f *BTreeFile) *btreeLeafPage { // TODO: rewrite so that we take in a list of tuples rather than using the btreefile iterator
 	var data []*Tuple = make([]*Tuple, 0)
 
 	return &btreeLeafPage{b_factor: f.b_factor, data: data, leftPtr: leftPtr, rightPtr: rightPtr,
 		parent: parent, btreeFile: f, desc: desc, pageNo: pageNo, divideField: divideField,
-		dirty: false}, nil
+		dirty: false}
 }
 
 // Page method - return whether or not the page is dirty
@@ -46,7 +47,9 @@ func (blp *btreeLeafPage) getFile() *DBFile {
 }
 
 // Initializes root page by creating internal and leaf pages as necessary
-func (blrp *btreeLeafPage) init(tups []*Tuple) error {
+func (blp *btreeLeafPage) init(tups []*Tuple) error {
+	fmt.Println("leaf:", tups)
+	blp.data = tups
 	return nil
 }
 

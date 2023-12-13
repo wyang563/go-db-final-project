@@ -5,7 +5,7 @@ import (
 )
 
 type item struct {
-	compareVal DBValue
+	compareVal *Tuple
 	leftPtr *BTreePage
 	rightPtr *BTreePage
 }
@@ -21,6 +21,7 @@ type BTreePage interface {
 	getFile() *DBFile
 	tupleIter() (func() (*Tuple, error), error)
 	traverse(pageVal btreeHash) *btreeLeafPage
+	init(tups []*Tuple) error
 }
 
 type BTreeFile struct {
@@ -72,6 +73,7 @@ func (bf *BTreeFile) Iterator(tid TransactionID) (func() (*Tuple, error), error)
 
 // Initialize tuples in BTreeFile
 func (bf *BTreeFile) init(tups []*Tuple) error {
+	// TODO: sort tuples here
 	return bf.root.init(tups)
 }
 

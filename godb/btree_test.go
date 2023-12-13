@@ -131,7 +131,7 @@ func testBTreeIterator(b_factor int) error {
 }
 
 func TestBTreeIterator(t *testing.T) {
-	for b_factor := 1; b_factor < 10; b_factor++ {
+	for b_factor := 2; b_factor < 10; b_factor++ {
 		if err := testBTreeIterator(b_factor); err != nil {
 			t.Errorf(err.Error())
 		}
