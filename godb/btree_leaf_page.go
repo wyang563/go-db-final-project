@@ -16,12 +16,12 @@ type btreeLeafPage struct {
 	desc        *TupleDesc
 	pageNo      int
 	dirty       bool
-	divideField string
+	divideField FieldExpr
 	height      int
 }
 
 // Construct a new leaf page
-func newLeafPage(desc *TupleDesc, leftPtr *BTreePage, rightPtr *BTreePage, parent *BTreePage, pageNo int, divideField string, f *BTreeFile) *btreeLeafPage { // TODO: rewrite so that we take in a list of tuples rather than using the btreefile iterator
+func newLeafPage(desc *TupleDesc, leftPtr *BTreePage, rightPtr *BTreePage, parent *BTreePage, pageNo int, divideField FieldExpr, f *BTreeFile) *btreeLeafPage { // TODO: rewrite so that we take in a list of tuples rather than using the btreefile iterator
 	var data []*Tuple = make([]*Tuple, 0)
 
 	return &btreeLeafPage{b_factor: f.b_factor, data: data, leftPtr: leftPtr, rightPtr: rightPtr,

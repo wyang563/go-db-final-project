@@ -12,7 +12,7 @@ type item struct {
 
 type btreeHash struct {
 	FileName 	string
-	pageValue	DBValue
+	pageValue	int
 }
 
 type BTreePage interface {
@@ -29,12 +29,12 @@ type BTreeFile struct {
 	desc			*TupleDesc 
 	root			*btreeRootPage   // root page of BTreeFile, either btree_root page or btree_leaf page
 	b_factor		int
-	divideField		string
+	divideField		FieldExpr
 	totalHeight		int
 }
 
 // Make btreeRootPage when making BtreeFile
-func NewBtreeFile(fromFile string, td *TupleDesc, b_factor int, divideField string, totalHeight int) (*BTreeFile, error) { // added totalHeight parameter in case we use it later
+func NewBtreeFile(fromFile string, td *TupleDesc, b_factor int, divideField FieldExpr, totalHeight int) (*BTreeFile, error) { // added totalHeight parameter in case we use it later
 	var file *BTreeFile = &BTreeFile{file: fromFile, desc: td, root: nil, b_factor: b_factor, divideField: divideField, totalHeight:  totalHeight}
 
 	var brp *btreeRootPage = newRootPage(td, divideField, file);
@@ -64,6 +64,39 @@ func (bf *BTreeFile) readPageByKey(pageVal btreeHash) (*Page, error) {
 
 func (bf *BTreeFile) Descriptor() *TupleDesc {
 	return bf.desc;
+}
+
+func (bf *BTreeFile) SelectRange(left, right *Tuple, compareField FieldExpr, tid TransactionID) (func() (*Tuple, error), error) {
+	// traverse to find left bound page
+	val, _ := compareField.EvalExpr(left);
+	temp := bf.pageKey(val);
+	var leftHash btreeHash = temp.(btreeHash);
+	leafPage := bf.root.traverse(leftHash);
+	curIter, _ := leafPage.tupleIter();
+	startCount := 0;
+	for i := 0; i < len(leafPage.data) - 1; i++ {
+		tupVal0, _ := compareField.EvalExpr(leafPage.data[i]);
+		tupVal1, _ := compareField.EvalExpr(leafPage.data[i + 1])
+		if compareDBVals(val, tupVal0) {
+			startCount = i;
+			break;
+		} else if compareDBVals(val, tupVal1) {
+			startCount = i + 1;
+			break;
+		}
+	}
+	// iterate up to start count tuple
+	for i := 0; i < startCount - 1; i++ {
+		curIter();
+	}
+	// get starting tuple
+	tup, _ := curIter();
+	return func() (*Tuple, error) {
+		for tup == nil {
+			leafPage = (*(leafPage.rightPtr)).(btreeLeafPage);
+		}	
+		return nil, nil;
+	}, nil;
 }
 
 func (bf *BTreeFile) Iterator(tid TransactionID) (func() (*Tuple, error), error) {

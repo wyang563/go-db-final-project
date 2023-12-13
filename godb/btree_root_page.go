@@ -10,12 +10,12 @@ type btreeRootPage struct {
 	desc		*TupleDesc
 	btreeFile	*BTreeFile
 	dirty		bool
-	divideField string
+	divideField FieldExpr
 	height 		int
 }
 
 // Construct a new root page
-func newRootPage(desc *TupleDesc, divideField string, f *BTreeFile) *btreeRootPage {
+func newRootPage(desc *TupleDesc, divideField FieldExpr, f *BTreeFile) *btreeRootPage {
 	var nodes []*item;
 	return &btreeRootPage{nodes: nodes, desc: desc, btreeFile: f,
 		                  dirty: false, divideField: divideField};

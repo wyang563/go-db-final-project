@@ -11,12 +11,12 @@ type btreeInternalPage struct {
 	btreeFile	*BTreeFile
 	desc		*TupleDesc
 	dirty		bool
-	divideField	string
+	divideField	FieldExpr
 	height		int
 }
 
 // Construct a new internal page
-func newInternalPage(desc *TupleDesc, parent *BTreePage, divideField string, f *BTreeFile) *btreeInternalPage {
+func newInternalPage(desc *TupleDesc, parent *BTreePage, divideField FieldExpr, f *BTreeFile) *btreeInternalPage {
 	return nil;
 }
 
