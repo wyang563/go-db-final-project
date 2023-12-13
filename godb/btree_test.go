@@ -158,7 +158,7 @@ func TestBTreeEntireRangeScan(t *testing.T) {
 	bf.init(tups);
 	left := tups[0];
 	right := tups[len(tups) - 1];
-	rangeIter, _ := bf.SelectRange(left, right, bf.divideField, tid);
+	rangeIter, _ := bf.SelectRange(left, right, tid);
 	count := 0;
 	tup, _ := rangeIter();
 	for tup != nil {
@@ -168,6 +168,49 @@ func TestBTreeEntireRangeScan(t *testing.T) {
 	}
 	if count != len(tups) {
 		fmt.Errorf("Range Scan Over All Elements Incorrect");
+	}
+}
+
+// Tests whether B+Tree Range Scan works on one tuple wide range
+func TestBTreeOneWideRangeScan(t *testing.T) {
+	_, tups, bf, tid, _ := makeBTreeTestVars(10);
+	bf.init(tups);
+	left := tups[0];
+	right := tups[0];
+	rangeIter, _ := bf.SelectRange(left, right, tid);
+	count := 0;
+	tup, _ := rangeIter();
+	for tup != nil {
+		tup, _ = rangeIter();
+		// Check if the one tuple iterated is correct
+		if tup != nil && !tup.equals(left) {
+			fmt.Errorf("Returned Incorrect Tuple");
+		}
+		count++;
+	}
+	if count != 1 {
+		fmt.Errorf("Scan Returned Wrong Number of Tuples");
+	}
+}
+
+func TestBTreeTenWideRangeScan(t *testing.T) {
+	_, tups, bf, tid, _ := makeBTreeTestVars(10);
+	bf.init(tups);
+	left := tups[101];
+	right := tups[110];
+	rangeIter, _ := bf.SelectRange(left, right, tid);
+	count := 0;
+	tup, _ := rangeIter();
+	for tup != nil {
+		tup, _ = rangeIter();
+		// Check if the one tuple iterated is correct
+		if tup != nil && !tup.equals(tups[count + 101]) {
+			fmt.Errorf("Returned Incorrect Tuple");
+		}
+		count++;
+	}
+	if count != 10 {
+		fmt.Errorf("Scan Returned Wrong Number of Tuples");
 	}
 }
 

@@ -66,7 +66,8 @@ func (bf *BTreeFile) readPage(pageNo int) (*Page, error) {
 	var resPage Page = (Page)(tempPage);
 	return &resPage, nil;
 }
-
+// returns a specific leaf page based on an inputted tuple and the FieldExpr the 
+// B+Tree is divided on
 func (bf *BTreeFile) findLeafPage(t *Tuple) (*btreeLeafPage) {
 	resPage := bf.root.traverse(t);
 	return resPage;
@@ -76,7 +77,7 @@ func (bf *BTreeFile) Descriptor() *TupleDesc {
 	return bf.desc;
 }
 
-func (bf *BTreeFile) SelectRange(left, right *Tuple, compareField FieldExpr, tid TransactionID) (func() (*Tuple, error), error) {
+func (bf *BTreeFile) SelectRange(left, right *Tuple, tid TransactionID) (func() (*Tuple, error), error) {
 	// traverse to find left bound page
 	leafPage := bf.findLeafPage(left);
 	curIter, _ := leafPage.tupleIter();
@@ -99,7 +100,7 @@ func (bf *BTreeFile) SelectRange(left, right *Tuple, compareField FieldExpr, tid
 	return func() (*Tuple, error) {
 		tup, _ := curIter();
 		for tup == nil {
-			leafPage := leafPage.rightPtr;
+			leafPage = leafPage.rightPtr;
 			if (leafPage == nil) {
 				return nil, nil;
 			}
