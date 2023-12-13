@@ -65,14 +65,13 @@ func (brp *btreeRootPage) init(tups []*Tuple) error {
 		}
 
 		page = &pg
-		fmt.Println("page:", pg, page)
 		pg.init(part)
 		pageList = append(pageList, page)
 	}
 
 	// make items and link together
 	for i := 0; i < b-1; i++ {
-		brp.nodes = append(brp.nodes, &item{compareVal: split[i+1], leftPtr: pageList[i], rightPtr: pageList[i+1]})
+		brp.nodes = append(brp.nodes, &item{compareVal: split[i], leftPtr: pageList[i], rightPtr: pageList[i+1]})
 	}
 
 	return nil

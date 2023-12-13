@@ -84,7 +84,8 @@ func (bip *btreeInternalPage) init(tups []*Tuple) error {
 
 	// make items and link together
 	for i := 0; i < b - 1; i++ {
-		bip.nodes = append(bip.nodes, &item{compareVal: split[i+1], leftPtr: pageList[i], rightPtr: pageList[i+1]})
+		fmt.Println("bip:", split, i, pageList)
+		bip.nodes = append(bip.nodes, &item{compareVal: split[i], leftPtr: pageList[i], rightPtr: pageList[i+1]})
 	}
 
 	return nil
