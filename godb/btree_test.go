@@ -8,19 +8,18 @@ import (
 )
 // TODO - change test case btrees such that they are rootpage, internalpage, leafpage (makes coding iterators easier)
 
-func makeBTreeTestVars(b_factor int) (TupleDesc, []*Tuple, *BTreeFile, TransactionID) {
+func makeBTreeTestVars(b_factor int) (TupleDesc, []*Tuple, *BTreeFile, TransactionID, FieldExpr) {
 	var td = TupleDesc{Fields: []FieldType{
 		{Fname: "name", Ftype: StringType},
 		{Fname: "age", Ftype: IntType},
 	}}
+	divideField := FieldExpr{selectField: td.Fields[1]};
 	var tupleList []*Tuple;
-	var totalHeight int = 5 // TODO: why do we have a totalHeight and where is it used?
-	// create list of tuples we can use in future
 
 	// create new btree file
-	bf, err := NewBtreeFile(TestingFile, &td, b_factor, "age", totalHeight);
+	bf, err := NewBtreeFile(TestingFile, &td, b_factor, divideField);
 	tid := NewTID();
-
+	// create list of tuples we can use in future
 	for i := 0; i < 30; i++ {
 		name := "sam" + strconv.Itoa(i);
 		tup := Tuple{Desc: td, 
@@ -38,11 +37,11 @@ func makeBTreeTestVars(b_factor int) (TupleDesc, []*Tuple, *BTreeFile, Transacti
 		print("ERROR MAKING TEST VARS, BLARGH");
 		panic(err);
 	}
-	return td, tupleList, bf, tid;
+	return td, tupleList, bf, tid, divideField;
 }
 
 func TestEmptyBTree(t *testing.T) {
-	_, _, bf, tid := makeBTreeTestVars(2);
+	_, _, bf, tid, _ := makeBTreeTestVars(2);
 	// run iterator to check nothing is returned
 	iter, _ := bf.Iterator(tid);
 	tup, _ := iter();
@@ -79,7 +78,7 @@ func TestEmptyBTree(t *testing.T) {
 // }
 
 func testBTreeIterator(b_factor int) error {
-	_, tups, bf, tid := makeBTreeTestVars(b_factor)
+	_, tups, bf, tid, _ := makeBTreeTestVars(b_factor)
 	tupset := make(map[int64] int)
 
 	for _, tup := range tups {

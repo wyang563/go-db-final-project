@@ -17,7 +17,6 @@ type btreeLeafPage struct {
 	pageNo      int
 	dirty       bool
 	divideField FieldExpr
-	height      int
 }
 
 // Construct a new leaf page
@@ -71,21 +70,14 @@ func (blp *btreeLeafPage) insertTuple(t *Tuple) error {
 	}
 	blp.data = append(blp.data, t)
 	// sort array according to the divide field
-	index := 0;
-	for i := 0; i < len(blp.desc.Fields); i++ {
-		if blp.desc.Fields[i].Fname == blp.divideField {
-			index = i;
-		}
-	}
-	fieldExpr := FieldExpr{selectField: blp.desc.Fields[index]};
 	sort.Slice(blp.data, func(i int, j int) bool {
-		res, _ := blp.data[i].compareField(blp.data[j], &fieldExpr);
+		res, _ := blp.data[i].compareField(blp.data[j], &blp.divideField);
 		return res == OrderedLessThan;
 	});
 	return nil
 }
 
 // Traverses tree given Tuple value and returns leaf page assosciated with tuple
-func (blp *btreeLeafPage) traverse(pageKey btreeHash) *btreeLeafPage {
+func (blp *btreeLeafPage) traverse(t *Tuple) *btreeLeafPage {
 	return blp;
 }

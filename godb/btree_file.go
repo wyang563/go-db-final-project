@@ -20,7 +20,7 @@ type BTreePage interface {
 	setDirty(dirty bool)
 	getFile() *DBFile
 	tupleIter() (func() (*Tuple, error), error)
-	traverse(pageVal btreeHash) *btreeLeafPage
+	traverse(t *Tuple) *btreeLeafPage
 	init(tups []*Tuple) error
 }
 
@@ -29,14 +29,13 @@ type BTreeFile struct {
 	desc			*TupleDesc 
 	root			*btreeRootPage   // root page of BTreeFile, either btree_root page or btree_leaf page
 	b_factor		int
-	divideField		FieldExpr
-	totalHeight		int
+	divideField		FieldExpr // field expr we can use on tuples to extract element we're dividing on
 	leafNum			int
 }
 
 // Make btreeRootPage when making BtreeFile
-func NewBtreeFile(fromFile string, td *TupleDesc, b_factor int, divideField FieldExpr, totalHeight int) (*BTreeFile, error) { // added totalHeight parameter in case we use it later
-	var file *BTreeFile = &BTreeFile{file: fromFile, desc: td, root: nil, b_factor: b_factor, divideField: divideField, totalHeight:  totalHeight}
+func NewBtreeFile(fromFile string, td *TupleDesc, b_factor int, divideField FieldExpr) (*BTreeFile, error) { // added totalHeight parameter in case we use it later
+	var file *BTreeFile = &BTreeFile{file: fromFile, desc: td, root: nil, b_factor: b_factor, divideField: divideField}
 
 	var brp *btreeRootPage = newRootPage(td, divideField, file);
 	
@@ -77,34 +76,39 @@ func (bf *BTreeFile) Descriptor() *TupleDesc {
 
 func (bf *BTreeFile) SelectRange(left, right *Tuple, compareField FieldExpr, tid TransactionID) (func() (*Tuple, error), error) {
 	// traverse to find left bound page
-	val, _ := compareField.EvalExpr(left);
-	temp := bf.pageKey(val);
-	var leftHash btreeHash = temp.(btreeHash);
-	leafPage := bf.root.traverse(leftHash);
+	leafPage := bf.root.traverse(left);
 	curIter, _ := leafPage.tupleIter();
 	startCount := 0;
 	for i := 0; i < len(leafPage.data) - 1; i++ {
-		tupVal0, _ := compareField.EvalExpr(leafPage.data[i]);
-		tupVal1, _ := compareField.EvalExpr(leafPage.data[i + 1])
-		if compareDBVals(val, tupVal0) {
+		compareRes0, _ := left.compareField(leafPage.data[i], &bf.divideField);
+		compareRes1, _ := left.compareField(leafPage.data[i + 1], &bf.divideField)
+		if compareRes0 == OrderedLessThan {
 			startCount = i;
 			break;
-		} else if compareDBVals(val, tupVal1) {
+		} else if compareRes1 == OrderedLessThan{
 			startCount = i + 1;
 			break;
 		}
 	}
 	// iterate up to start count tuple
-	for i := 0; i < startCount - 1; i++ {
+	for i := 0; i < startCount; i++ {
 		curIter();
 	}
 	// get starting tuple
 	tup, _ := curIter();
 	return func() (*Tuple, error) {
 		for tup == nil {
-			leafPage = (*(leafPage.rightPtr)).(btreeLeafPage);
+			leafPageTemp := leafPage.rightPtr;
+			leafPage = (*leafPageTemp).(*btreeLeafPage);
+			curIter, _ = leafPage.tupleIter();
+			tup, _ = curIter();
+		}
+		compareRes, _ := tup.compareField(right, &bf.divideField);
+		// check if current value is out of range
+		if compareRes == OrderedGreaterThan {
+			return nil, nil;
 		}	
-		return nil, nil;
+		return tup, nil;
 	}, nil;
 }
 

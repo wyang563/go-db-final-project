@@ -6,24 +6,23 @@ import (
 
 type btreeRootPage struct {
 	// if we want b_factor, fetch from btreeFile
-	nodes		[]*item
-	desc		*TupleDesc
-	btreeFile	*BTreeFile
-	dirty		bool
+	nodes       []*item
+	desc        *TupleDesc
+	btreeFile   *BTreeFile
+	dirty       bool
 	divideField FieldExpr
-	height 		int
 }
 
 // Construct a new root page
 func newRootPage(desc *TupleDesc, divideField FieldExpr, f *BTreeFile) *btreeRootPage {
 	var nodes []*item;
 	return &btreeRootPage{nodes: nodes, desc: desc, btreeFile: f,
-		                  dirty: false, divideField: divideField};
+		dirty: false, divideField: divideField}
 }
 
 // Page method - return whether or not the page is dirty
 func (brp *btreeRootPage) isDirty() bool {
-	return brp.dirty 
+	return brp.dirty
 }
 
 // Initializes root page by creating internal and leaf pages as necessary
@@ -34,7 +33,7 @@ func (brp *btreeRootPage) init(tups []*Tuple) error {
 	split := make([]*Tuple, 0)
 	pageList := make([]*BTreePage, 0)
 
-	psize := len(tups)/brp.btreeFile.b_factor
+	psize := len(tups) / brp.btreeFile.b_factor
 	var b int = brp.btreeFile.b_factor // Golang min requires upgrading version
 	if len(tups) < b {
 		b = len(tups)
@@ -49,10 +48,10 @@ func (brp *btreeRootPage) init(tups []*Tuple) error {
 		var pg BTreePage
 		var page *BTreePage
 
-		if i == b - 1 {
+		if i == b-1 {
 			part = tups[i*psize:]
 		} else {
-			part = tups[i*psize:(i+1)*psize]
+			part = tups[i*psize : (i+1)*psize]
 		}
 
 		rpage := (BTreePage)(brp)
@@ -72,7 +71,7 @@ func (brp *btreeRootPage) init(tups []*Tuple) error {
 	}
 
 	// make items and link together
-	for i := 0; i < b - 1; i++ {
+	for i := 0; i < b-1; i++ {
 		brp.nodes = append(brp.nodes, &item{compareVal: split[i+1], leftPtr: pageList[i], rightPtr: pageList[i+1]})
 	}
 
@@ -87,22 +86,22 @@ func (brp *btreeRootPage) setDirty(dirty bool) {
 // Page method - return the corresponding HeapFile
 // for this page.
 func (brp *btreeRootPage) getFile() *DBFile {
-	var f DBFile = brp.btreeFile;
+	var f DBFile = brp.btreeFile
 	return &f
 }
 
 // gets the next child page based on the nodeIterNum in our list and the new node_iter_num
 func (brp *btreeRootPage) getNextIter(nodeIterNum int) (func() (*Tuple, error), error) {
-	if (nodeIterNum > len(brp.nodes)) { // if node iter num is out of bounds, return nil
+	if nodeIterNum > len(brp.nodes) { // if node iter num is out of bounds, return nil
 		return nil, nil
 	}
 
 	var child *BTreePage
 
-	if (nodeIterNum == len(brp.nodes)) {
-		child = brp.nodes[nodeIterNum - 1].rightPtr;
+	if nodeIterNum == len(brp.nodes) {
+		child = brp.nodes[nodeIterNum-1].rightPtr
 	} else {
-		child = brp.nodes[nodeIterNum].leftPtr;
+		child = brp.nodes[nodeIterNum].leftPtr
 	}
 
 	iter, err := (*child).tupleIter()
@@ -117,15 +116,15 @@ func (brp *btreeRootPage) getNextIter(nodeIterNum int) (func() (*Tuple, error), 
 // Return a function that recursively call iterators of child nodes to then get tuples
 func (brp *btreeRootPage) tupleIter() (func() (*Tuple, error), error) { // TODO: check that this works later
 	// check if items is empty first
-	nodeIterNum := 0;
+	nodeIterNum := 0
 	// case if nodeList is empty
 	if len(brp.nodes) == 0 {
 		return func() (*Tuple, error) {
-			return nil, nil;
-		}, nil;
+			return nil, nil
+		}, nil
 	}
 	// iterate through left child of each item elem in nodes
-	curIter, err := brp.getNextIter(nodeIterNum);
+	curIter, err := brp.getNextIter(nodeIterNum)
 	nodeIterNum++
 
 	if err != nil {
@@ -133,46 +132,42 @@ func (brp *btreeRootPage) tupleIter() (func() (*Tuple, error), error) { // TODO:
 	}
 
 	if curIter == nil {
-		return nil, nil;
+		return nil, nil
 	}
 
 	return func() (*Tuple, error) {
 		// if curIter isn't nil, then iterate through its tuples
-		tup, _ := curIter();
+		tup, _ := curIter()
 
 		for tup == nil {
-			curIter, err = brp.getNextIter(nodeIterNum);
+			curIter, err = brp.getNextIter(nodeIterNum)
 
 			if err != nil {
 				return nil, err
 			}
 			nodeIterNum++
 			if curIter == nil || nodeIterNum > len(brp.nodes) {
-				return nil, nil;
+				return nil, nil
 			}
-			tup, _ = curIter();
+			tup, _ = curIter()
 		}
 
-		return tup, nil;
-	}, nil;
+		return tup, nil
+	}, nil
 }
 
 // Traverses tree given Tuple value and returns leaf page assosciated with tuple
-func (brp *btreeRootPage) traverse(pageVal btreeHash) *btreeLeafPage {
-	pVal := pageVal.pageValue;
-	var i int;
+func (brp *btreeRootPage) traverse(t *Tuple) *btreeLeafPage {
+	var i int
 	for i = 0; i < len(brp.nodes); i++ {
-		divideVal := brp.nodes[i].compareVal;
-		if compareDBVals(pVal, divideVal) {
-			nextPage := *(brp.nodes[i].leftPtr);
-			return nextPage.traverse(pageVal);
+		divideVal := brp.nodes[i].compareVal
+		compareRes, _ := t.compareField(divideVal, &brp.divideField)
+		if compareRes == OrderedLessThan {
+			nextPage := *(brp.nodes[i].leftPtr)
+			return nextPage.traverse(t)
 		}
 	}
-	// otherwise element is at right most end 
-	nextPage := *(brp.nodes[i].rightPtr);
-	return nextPage.traverse(pageVal);
+	// otherwise element is at right most end
+	nextPage := *(brp.nodes[i].rightPtr)
+	return nextPage.traverse(t);
 }
-
-
-
-

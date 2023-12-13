@@ -12,12 +12,13 @@ type btreeInternalPage struct {
 	desc		*TupleDesc
 	dirty		bool
 	divideField	FieldExpr
-	height		int
 }
 
 // Construct a new internal page
 func newInternalPage(desc *TupleDesc, parent *BTreePage, divideField FieldExpr, f *BTreeFile) *btreeInternalPage {
-	return nil;
+	var nodes []*item;
+	return &btreeInternalPage{b_factor: f.b_factor, nodes: nodes, parent: parent, btreeFile: f, 
+		                      desc: desc, dirty: false, divideField: divideField};
 }
 
 // Page method - return whether or not the page is dirty
@@ -159,19 +160,19 @@ func (bip *btreeInternalPage) tupleIter() (func() (*Tuple, error), error) { // T
 }
 
 // Traverses tree given Tuple value and returns leaf page assosciated with tuple
-func (bip *btreeInternalPage) traverse(pageVal btreeHash) *btreeLeafPage {
-	pVal := pageVal.pageValue;
-	var i int;
+func (bip *btreeInternalPage) traverse(t *Tuple) *btreeLeafPage {
+	var i int
 	for i = 0; i < len(bip.nodes); i++ {
-		divideVal := bip.nodes[i].compareVal;
-		if compareDBVals(pVal, divideVal) {
-			nextPage := *(bip.nodes[i].leftPtr);
-			return nextPage.traverse(pageVal);
+		divideVal := bip.nodes[i].compareVal
+		compareRes, _ := t.compareField(divideVal, &bip.divideField)
+		if compareRes == OrderedLessThan {
+			nextPage := *(bip.nodes[i].leftPtr)
+			return nextPage.traverse(t)
 		}
 	}
-	// otherwise element is at right most end 
-	nextPage := *(bip.nodes[i].rightPtr);
-	return nextPage.traverse(pageVal);
+	// otherwise element is at right most end
+	nextPage := *(bip.nodes[i].rightPtr)
+	return nextPage.traverse(t);
 }
 
 
