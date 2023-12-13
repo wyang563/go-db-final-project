@@ -8,33 +8,36 @@ import (
 )
 // TODO - change test case btrees such that they are rootpage, internalpage, leafpage (makes coding iterators easier)
 
-func makeBTreeTestVars(b_factor int) (TupleDesc, []Tuple, *BTreeFile, TransactionID) {
+func makeBTreeTestVars(b_factor int) (TupleDesc, []*Tuple, *BTreeFile, TransactionID) {
 	var td = TupleDesc{Fields: []FieldType{
 		{Fname: "name", Ftype: StringType},
 		{Fname: "age", Ftype: IntType},
 	}}
-	var tupleList []Tuple;
+	var tupleList []*Tuple;
 	var totalHeight int = 5 // TODO: why do we have a totalHeight and where is it used?
 	// create list of tuples we can use in future
-	for i := 0; i < 30; i++ {
-		name := "sam" + strconv.Itoa(i);
-		tupleList = append(tupleList, Tuple{Desc: td, 
-											Fields: []DBValue{
-												StringField{name},
-												IntField{int64(i)},
-											}});
-	}
-	os.Remove(TestingFile)
 
 	// create new btree file
 	bf, err := NewBtreeFile(TestingFile, &td, b_factor, "age", totalHeight);
+	tid := NewTID();
+
+	for i := 0; i < 30; i++ {
+		name := "sam" + strconv.Itoa(i);
+		tup := Tuple{Desc: td, 
+					Fields: []DBValue{
+						StringField{name},
+						IntField{int64(i)},
+					}}
+		tupleList = append(tupleList, &tup);
+		
+	}
+	bf.init(tupleList)
+	os.Remove(TestingFile)
 	
 	if err != nil {
 		print("ERROR MAKING TEST VARS, BLARGH");
 		panic(err);
 	}
-	// set root page pointer to new file we just created
-	tid := NewTID();
 	return td, tupleList, bf, tid;
 }
 
@@ -95,6 +98,8 @@ func testBTreeIterator(b_factor int) error {
 	for {
 		tup, err := btree_it()
 
+		fmt.Println("tup ,err", tup, err)
+
 		if tup == nil {
 			break
 		}
@@ -118,6 +123,7 @@ func testBTreeIterator(b_factor int) error {
 	}
 
 	if unique_tups != 30 {
+		fmt.Println("unique tups:", unique_tups)
 		return fmt.Errorf("Number of tuples is incorrect")
 	}
 

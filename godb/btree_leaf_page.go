@@ -45,6 +45,11 @@ func (blp *btreeLeafPage) getFile() *DBFile {
 	return &f
 }
 
+// Initializes root page by creating internal and leaf pages as necessary
+func (blrp *btreeLeafPage) init(tups []*Tuple) error {
+	return nil
+}
+
 // Return a function that iterates through the tuples of the leaf page
 func (blp *btreeLeafPage) tupleIter() (func() (*Tuple, error), error) {
 	n := 0

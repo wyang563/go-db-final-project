@@ -33,6 +33,11 @@ func (bip *btreeInternalPage) getFile() *DBFile {
 	return &f
 }
 
+// Initializes root page by creating internal and leaf pages as necessary
+func (bip *btreeInternalPage) init(tups []*Tuple) error {
+	return nil
+}
+
 // gets the next child page based on the nodeIterNum in our list and the new node_iter_num
 func (bip *btreeInternalPage) getNextIter(nodeIterNum int) (func() (*Tuple, error), error) {
 	if (nodeIterNum > len(bip.nodes)) { // if node iter num is out of bounds, return nil

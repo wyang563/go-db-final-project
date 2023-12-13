@@ -25,6 +25,11 @@ func (brp *btreeRootPage) isDirty() bool {
 	return brp.dirty 
 }
 
+// Initializes root page by creating internal and leaf pages as necessary
+func (brp *btreeRootPage) init(tups []*Tuple) error {
+	return nil
+}
+
 // Page method - mark the page as dirty
 func (brp *btreeRootPage) setDirty(dirty bool) {
 	brp.dirty = dirty

@@ -70,6 +70,11 @@ func (bf *BTreeFile) Iterator(tid TransactionID) (func() (*Tuple, error), error)
 	return iter, nil;
 }
 
+// Initialize tuples in BTreeFile
+func (bf *BTreeFile) init(tups []*Tuple) error {
+	return bf.root.init(tups)
+}
+
 // dummy functions just so we implement DBFile
 func (bf *BTreeFile) flushPage(page *Page) error {
 	return nil;
