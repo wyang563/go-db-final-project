@@ -4,15 +4,8 @@ import (
 	"fmt"
 )
 
-type BTreePage interface {
-	isDirty() bool
-	setDirty(dirty bool)
-	getFile() *DBFile
-	tupleIter() (func() (*Tuple, error), error)
-}
-
 type item struct {
-	num int
+	compareVal DBValue
 	leftPtr *BTreePage
 	rightPtr *BTreePage
 }
@@ -20,6 +13,14 @@ type item struct {
 type btreeHash struct {
 	FileName 	string
 	pageValue	DBValue
+}
+
+type BTreePage interface {
+	isDirty() bool
+	setDirty(dirty bool)
+	getFile() *DBFile
+	tupleIter() (func() (*Tuple, error), error)
+	traverse(pageVal btreeHash) *btreeLeafPage
 }
 
 type BTreeFile struct {

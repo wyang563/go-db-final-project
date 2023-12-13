@@ -418,3 +418,18 @@ func (t *Tuple) PrettyPrintString(aligned bool) string {
 	return outstr
 
 }
+
+// Given two DBvalues returns whether val1 > val2
+func compareDBVals(val1 DBValue, val2 DBValue) bool {
+	switch val1.(type) {
+	case StringField:
+		var v1 StringField = val1.(StringField);
+		var v2 StringField = val2.(StringField);
+		return v1.Value < v2.Value;
+	case IntField:
+		var v1 IntField = val1.(IntField);
+		var v2 IntField = val2.(IntField);
+		return v1.Value < v2.Value;
+	}
+	return false;
+}

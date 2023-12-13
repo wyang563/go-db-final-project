@@ -79,5 +79,5 @@ func (blp *btreeLeafPage) insertTuple(t *Tuple) error {
 
 // Traverses tree given Tuple value and returns leaf page assosciated with tuple
 func (blp *btreeLeafPage) traverse(pageKey btreeHash) *btreeLeafPage {
-	return blp
+	return blp;
 }

@@ -92,13 +92,10 @@ func (brp *btreeRootPage) tupleIter() (func() (*Tuple, error), error) { // TODO:
 			if err != nil {
 				return nil, err
 			}
-
 			nodeIterNum++
-
 			if curIter == nil || nodeIterNum > len(brp.nodes) {
 				return nil, nil;
 			}
-
 			tup, _ = curIter();
 		}
 
@@ -107,8 +104,19 @@ func (brp *btreeRootPage) tupleIter() (func() (*Tuple, error), error) { // TODO:
 }
 
 // Traverses tree given Tuple value and returns leaf page assosciated with tuple
-func (bip *btreeRootPage) traverse(pageVal btreeHash) *btreeLeafPage {
-	return nil;
+func (brp *btreeRootPage) traverse(pageVal btreeHash) *btreeLeafPage {
+	pVal := pageVal.pageValue;
+	var i int;
+	for i = 0; i < len(brp.nodes); i++ {
+		divideVal := brp.nodes[i].compareVal;
+		if compareDBVals(pVal, divideVal) {
+			nextPage := *(brp.nodes[i].leftPtr);
+			return nextPage.traverse(pageVal);
+		}
+	}
+	// otherwise element is at right most end 
+	nextPage := *(brp.nodes[i].rightPtr);
+	return nextPage.traverse(pageVal);
 }
 
 
