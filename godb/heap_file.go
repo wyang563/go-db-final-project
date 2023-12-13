@@ -46,7 +46,7 @@ func NewHeapFile(fromFile string, td *TupleDesc, bp *BufferPool) (*HeapFile, err
 func (f *HeapFile) NumPages() int {
 	fileInfo, err := os.Stat(f.file)
 	if err != nil {
-		fmt.Println("unable to read file info")
+		// fmt.Println("unable to read file info")
 		return 0
 	}
 	fileSize := int(fileInfo.Size())
@@ -143,7 +143,7 @@ func (f *HeapFile) readPage(pageNo int) (*Page, error) {
 	// fileSize, _ := fi.Stat();
 	// fmt.Println(fileSize.Size());
 	if err != nil {
-		fmt.Println("error reading file")
+		// fmt.Println("error reading file")
 		return nil, err
 	}
 	// fmt.Println(fi);
@@ -209,7 +209,7 @@ func (f *HeapFile) insertTuple(t *Tuple, tid TransactionID) error {
 	for i := 0; i < totalPages; i++ {
 		page, err := f.bufPool.GetPage(f, i, tid, ReadPerm);
 		if err != nil {
-			fmt.Println("error reading page in insertTuple")
+			// fmt.Println("error reading page in insertTuple")
 			return err
 		}
 		var p *heapPage = (*page).(*heapPage)
@@ -218,7 +218,7 @@ func (f *HeapFile) insertTuple(t *Tuple, tid TransactionID) error {
 			_, err := p.insertTuple(t)
 			f.m.Unlock();
 			if err != nil {
-				fmt.Println("error inserting into page on file")
+				// fmt.Println("error inserting into page on file")
 				return err
 			}
 			//pagePointer := (Page)(p)
@@ -235,7 +235,7 @@ func (f *HeapFile) insertTuple(t *Tuple, tid TransactionID) error {
 	f.m.Unlock();
 	page, err := f.bufPool.GetPage(f, newPageNo, tid, WritePerm);
 	if err != nil {
-		fmt.Println("error reading page in insertTuple")
+		// fmt.Println("error reading page in insertTuple")
 		return err
 	}
 	var heapPage = (*page).(*heapPage);
@@ -299,7 +299,7 @@ func (f *HeapFile) flushPage(p *Page) error {
 	// write buffer data to file
 	fi, err := os.OpenFile(f.file, os.O_WRONLY, 0644)
 	if err != nil {
-		fmt.Println("error opening file")
+		// fmt.Println("error opening file")
 		return err
 	}
 	_, err = fi.WriteAt(dataBuffer.Bytes(), int64(offset))
@@ -355,7 +355,7 @@ func (f *HeapFile) Iterator(tid TransactionID) (func() (*Tuple, error), error) {
 			}
 			rawPage, err = f.bufPool.GetPage(f, iterPageNo, tid, ReadPerm)
 			if err != nil {
-				fmt.Println("Get Page Error in Iterator")
+				// fmt.Println("Get Page Error in Iterator")
 				return nil, nil
 			}
 			var curPage *heapPage = (*rawPage).(*heapPage)
