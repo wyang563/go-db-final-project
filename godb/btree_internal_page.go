@@ -3,7 +3,7 @@ package godb
 type btreeInternalPage struct {
 	b_factor int
 	nodes    	[]*item
-	parent	 	*Page
+	parent	 	*BTreePage
 	btreeFile	*BTreeFile
 	desc		*TupleDesc
 	dirty		bool

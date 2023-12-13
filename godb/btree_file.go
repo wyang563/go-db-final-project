@@ -4,10 +4,17 @@ import (
 	"fmt"
 )
 
+type BTreePage interface {
+	isDirty() bool
+	setDirty(dirty bool)
+	getFile() *DBFile
+	tupleIter() (func() (*Tuple, error), error)
+}
+
 type item struct {
 	num int
-	leftPtr *Page
-	rightPtr *Page
+	leftPtr *BTreePage
+	rightPtr *BTreePage
 }
 
 type btreeHash struct {
@@ -18,7 +25,7 @@ type btreeHash struct {
 type BTreeFile struct {
 	file			string
 	desc			*TupleDesc 
-	root			*Page   // root page of BTreeFile, either btree_root page or btree_leaf page
+	root			*btreeRootPage   // root page of BTreeFile, either btree_root page or btree_leaf page
 	b_factor		int
 	divideField		string
 	totalHeight		int
@@ -28,10 +35,11 @@ type BTreeFile struct {
 func NewBtreeFile(fromFile string, td *TupleDesc, b_factor int, divideField string, totalHeight int) (*BTreeFile, error) { // added totalHeight parameter in case we use it later
 	var file *BTreeFile = &BTreeFile{file: fromFile, desc: td, root: nil, b_factor: b_factor, divideField: divideField, totalHeight:  totalHeight}
 
-	var brpp = newRootPage(td, "age", file);
-	var brp Page = (Page)(brpp);
+	var brp *btreeRootPage = newRootPage(td, "age", file);
 	
-	file.setRootPage(&brp) // assigns btreeRootPage
+	file.setRootPage(brp) // assigns btreeRootPage
+
+	// read tuples in fromFile, insert into root page, root page creates child pages as needed
 	return file, nil;
 }
 
@@ -39,7 +47,7 @@ func (bf *BTreeFile) pageKey(pageValue int) any {
 	return btreeHash{FileName: bf.file, pageValue: pageValue};
 }
 
-func (bf *BTreeFile) setRootPage(page *Page) {
+func (bf *BTreeFile) setRootPage(page *btreeRootPage) {
 	bf.root = page
 }
 

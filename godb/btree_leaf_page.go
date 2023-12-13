@@ -7,9 +7,9 @@ import (
 type btreeLeafPage struct {
 	b_factor int
 	data    	[]*Tuple
-	leftPtr	 	*Page
-	rightPtr 	*Page
-	parent	 	*Page
+	leftPtr	 	*BTreePage
+	rightPtr 	*BTreePage
+	parent	 	*BTreePage
 	btreeFile	*BTreeFile
 	desc 		*TupleDesc
 	pageNo		int
@@ -19,7 +19,7 @@ type btreeLeafPage struct {
 }
 
 // Construct a new leaf page
-func newLeafPage(desc *TupleDesc, leftPtr *Page, rightPtr *Page, parent *Page, pageNo int, divideField string, f *BTreeFile, tid TransactionID) (*btreeLeafPage, error) {
+func newLeafPage(desc *TupleDesc, leftPtr *BTreePage, rightPtr *BTreePage, parent *BTreePage, pageNo int, divideField string, f *BTreeFile, tid TransactionID) (*btreeLeafPage, error) { // TODO: rewrite so that we take in a list of tuples rather than using the btreefile iterator
 	var data []*Tuple = make([]*Tuple, 0);
 	btree_it, err := f.Iterator(tid)
 
