@@ -31,11 +31,12 @@ type BTreeFile struct {
 	b_factor		int
 	divideField		string
 	totalHeight		int
+	leafNum			int
 }
 
 // Make btreeRootPage when making BtreeFile
 func NewBtreeFile(fromFile string, td *TupleDesc, b_factor int, divideField string, totalHeight int) (*BTreeFile, error) { // added totalHeight parameter in case we use it later
-	var file *BTreeFile = &BTreeFile{file: fromFile, desc: td, root: nil, b_factor: b_factor, divideField: divideField, totalHeight:  totalHeight}
+	var file *BTreeFile = &BTreeFile{file: fromFile, desc: td, root: nil, b_factor: b_factor, divideField: divideField, totalHeight: totalHeight, leafNum: 0}
 
 	var brp *btreeRootPage = newRootPage(td, divideField, file);
 	
@@ -51,6 +52,14 @@ func (bf *BTreeFile) pageKey(pageValue int) any {
 
 func (bf *BTreeFile) setRootPage(page *btreeRootPage) {
 	bf.root = page
+}
+
+func (bf *BTreeFile) LeafInc() {
+	bf.leafNum++
+}
+
+func (bf *BTreeFile) Leaves() int {
+	return bf.leafNum
 }
 
 // reads page given a specific pageKey hash
