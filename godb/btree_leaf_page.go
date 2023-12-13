@@ -1,7 +1,7 @@
 package godb
 
 import (
-
+	"fmt"
 )
 
 type btreeLeafPage struct {
@@ -19,11 +19,31 @@ type btreeLeafPage struct {
 }
 
 // Construct a new leaf page
-func newLeafPage(desc *TupleDesc, leftPtr *Page, rightPtr *Page, parent *Page, pageNo int, divideField string, f *BTreeFile) *btreeLeafPage {
-	var data []*Tuple;
+func newLeafPage(desc *TupleDesc, leftPtr *Page, rightPtr *Page, parent *Page, pageNo int, divideField string, f *BTreeFile, tid TransactionID) (*btreeLeafPage, error) {
+	var data []*Tuple = make([]*Tuple, 0);
+	btree_it, err := f.Iterator(tid)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error fetching BTreeFile iterator")
+	}
+
+	for {
+		tup, err := btree_it()
+
+		if tup == nil {
+			break
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("Iterator error:" + err.Error())
+		}
+
+		data = append(data, tup)
+	}
+
 	return &btreeLeafPage{b_factor: f.b_factor, data: data, leftPtr: leftPtr, rightPtr: rightPtr, 
 		                  parent: parent, btreeFile: f, desc: desc, pageNo: pageNo, divideField: divideField,
-						  dirty: false};
+						  dirty: false}, nil;
 }
 
 // Page method - return whether or not the page is dirty
@@ -50,9 +70,10 @@ func (blp *btreeLeafPage) tupleIter() (func() (*Tuple, error), error) {
 		if n >= len(blp.data) {
 			return nil, nil;
 		}
-		tupVal := blp.data[n];
+
 		n++;
-		return tupVal, nil;
+
+		return blp.data[n-1], nil;
 	}, nil;
 }
 

@@ -16,7 +16,7 @@ func testBTreeIterator(b_factor int) error {
 	btree_it, err := bf.Iterator(tid)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	unique_tups := 0 // there should be 30 unique tuples

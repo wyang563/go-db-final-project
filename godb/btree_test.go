@@ -13,6 +13,7 @@ func makeBTreeTestVars(b_factor int) (TupleDesc, []Tuple, *BTreeFile, Transactio
 		{Fname: "age", Ftype: IntType},
 	}}
 	var tupleList []Tuple;
+	var totalHeight int = 5 // TODO: why do we have a totalHeight and where is it used?
 	// create list of tuples we can use in future
 	for i := 0; i < 30; i++ {
 		name := "sam" + strconv.Itoa(i);
@@ -23,18 +24,15 @@ func makeBTreeTestVars(b_factor int) (TupleDesc, []Tuple, *BTreeFile, Transactio
 											}});
 	}
 	os.Remove(TestingFile)
-	var brpp = newRootPage(&td, "age", nil);
-	var brptmp Page = (Page)(brpp);
-	var brp *Page = &brptmp;
+
 	// create new btree file
-	bf, err := NewBtreeFile(TestingFile, &td, brp, b_factor, "age");
+	bf, err := NewBtreeFile(TestingFile, &td, b_factor, "age", totalHeight);
 	
 	if err != nil {
 		print("ERROR MAKING TEST VARS, BLARGH");
 		panic(err);
 	}
 	// set root page pointer to new file we just created
-	brpp.btreeFile = bf;
 	tid := NewTID();
 	return td, tupleList, bf, tid;
 }
@@ -52,7 +50,12 @@ func TestEmptyBTree(t *testing.T) {
 func TestOneElementBTree(t *testing.T) {
 	td, tupleList, bf, tid := makeBTreeTestVars(4);
 	// create 1 element btree
-	leafPage := newLeafPage(&td, nil, nil, bf.root, 0, bf.divideField, bf);
+	leafPage, err := newLeafPage(&td, nil, nil, bf.root, 0, bf.divideField, bf, tid);
+
+	if err != nil {
+		t.Errorf("Error creating leaf page:" + err.Error())
+	}
+
 	leafPage.data = append(leafPage.data, &(tupleList[0]));
 	var rootNode *btreeRootPage = (*bf.root).(*btreeRootPage);
 	var leaf Page = (Page)(leafPage);

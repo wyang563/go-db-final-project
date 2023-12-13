@@ -1,7 +1,10 @@
 package godb
 
+import (
+)
+
 type btreeRootPage struct {
-	b_factor	int
+	// if we want b_factor, fetch from btreeFile
 	nodes		[]*item
 	desc		*TupleDesc
 	btreeFile	*BTreeFile
@@ -13,7 +16,7 @@ type btreeRootPage struct {
 // Construct a new root page
 func newRootPage(desc *TupleDesc, divideField string, f *BTreeFile) *btreeRootPage {
 	var nodes []*item;
-	return &btreeRootPage{b_factor: f.b_factor, nodes: nodes, desc: desc, btreeFile: f,
+	return &btreeRootPage{nodes: nodes, desc: desc, btreeFile: f,
 		                  dirty: false, divideField: divideField};
 }
 

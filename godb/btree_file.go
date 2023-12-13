@@ -1,5 +1,9 @@
 package godb
 
+import (
+	"fmt"
+)
+
 type item struct {
 	num int
 	leftPtr *Page
@@ -20,12 +24,23 @@ type BTreeFile struct {
 	totalHeight		int
 }
 
-func NewBtreeFile(fromFile string, td *TupleDesc, root *Page, b_factor int, divideField string) (*BTreeFile, error) {
-	return nil, nil;
+// Make btreeRootPage when making BtreeFile
+func NewBtreeFile(fromFile string, td *TupleDesc, b_factor int, divideField string, totalHeight int) (*BTreeFile, error) { // added totalHeight parameter in case we use it later
+	var file *BTreeFile = &BTreeFile{file: fromFile, desc: td, root: nil, b_factor: b_factor, divideField: divideField, totalHeight:  totalHeight}
+
+	var brpp = newRootPage(td, "age", file);
+	var brp Page = (Page)(brpp);
+	
+	file.setRootPage(&brp) // assigns btreeRootPage
+	return file, nil;
 }
 
 func (bf *BTreeFile) pageKey(pageValue int) any {
 	return btreeHash{FileName: bf.file, pageValue: pageValue};
+}
+
+func (bf *BTreeFile) setRootPage(page *Page) {
+	bf.root = page
 }
 
 // reads page given a specific pageKey hash
@@ -42,7 +57,7 @@ func (bf *BTreeFile) Descriptor() *TupleDesc {
 }
 
 func (bf *BTreeFile) Iterator(tid TransactionID) (func() (*Tuple, error), error) {
-	return nil, nil;
+	return nil, fmt.Errorf("Iterator unimplemented");
 }
 
 // dummy functions just so we implement DBFile
