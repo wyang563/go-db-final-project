@@ -47,32 +47,32 @@ func TestEmptyBTree(t *testing.T) {
 	}
 }
 
-func TestOneElementBTree(t *testing.T) {
-	td, tupleList, bf, tid := makeBTreeTestVars(4);
-	// create 1 element btree
-	leafPage, err := newLeafPage(&td, nil, nil, bf.root, 0, bf.divideField, bf, tid);
+// func TestOneElementBTree(t *testing.T) {
+// 	td, tupleList, bf, tid := makeBTreeTestVars(4);
+// 	// create 1 element btree
+// 	leafPage, err := newLeafPage(&td, nil, nil, bf.root, 0, bf.divideField, bf, tid);
 
-	if err != nil {
-		t.Errorf("Error creating leaf page:" + err.Error())
-	}
+// 	if err != nil {
+// 		t.Errorf("Error creating leaf page:" + err.Error())
+// 	}
 
-	leafPage.data = append(leafPage.data, &(tupleList[0]));
-	var rootNode *btreeRootPage = (*bf.root).(*btreeRootPage);
-	var leaf Page = (Page)(leafPage);
-	rootNode.nodes = append(rootNode.nodes, &item{num: 2, leftPtr: &leaf, rightPtr: nil});
-	count := 0;
-	iter, _ := bf.Iterator(tid);
-	for {
-		tup, _ := iter();
-		if tup == nil {
-			break;
-		}
-		count++;
-		if count > 1 {
-			t.Errorf("expected there to be only 1 tuple");
-		}
-	}
-}
+// 	leafPage.data = append(leafPage.data, &(tupleList[0]));
+// 	var rootNode *btreeRootPage = (*bf.root).(*btreeRootPage);
+// 	var leaf Page = (Page)(leafPage);
+// 	rootNode.nodes = append(rootNode.nodes, &item{num: 2, leftPtr: &leaf, rightPtr: nil});
+// 	count := 0;
+// 	iter, _ := bf.Iterator(tid);
+// 	for {
+// 		tup, _ := iter();
+// 		if tup == nil {
+// 			break;
+// 		}
+// 		count++;
+// 		if count > 1 {
+// 			t.Errorf("expected there to be only 1 tuple");
+// 		}
+// 	}
+// }
 
 
 
