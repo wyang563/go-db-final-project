@@ -1,7 +1,7 @@
 package godb
 
 import (
-	"fmt"
+	// "fmt"
 )
 
 type item struct {
@@ -36,7 +36,7 @@ type BTreeFile struct {
 func NewBtreeFile(fromFile string, td *TupleDesc, b_factor int, divideField string, totalHeight int) (*BTreeFile, error) { // added totalHeight parameter in case we use it later
 	var file *BTreeFile = &BTreeFile{file: fromFile, desc: td, root: nil, b_factor: b_factor, divideField: divideField, totalHeight:  totalHeight}
 
-	var brp *btreeRootPage = newRootPage(td, "age", file);
+	var brp *btreeRootPage = newRootPage(td, divideField, file);
 	
 	file.setRootPage(brp) // assigns btreeRootPage
 
@@ -66,7 +66,8 @@ func (bf *BTreeFile) Descriptor() *TupleDesc {
 }
 
 func (bf *BTreeFile) Iterator(tid TransactionID) (func() (*Tuple, error), error) {
-	return nil, fmt.Errorf("Iterator unimplemented");
+	iter, _ := bf.root.tupleIter();
+	return iter, nil;
 }
 
 // dummy functions just so we implement DBFile
