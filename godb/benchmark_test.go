@@ -28,8 +28,9 @@ func TestBTreeTime(t *testing.T) {
 	// if err != nil {
 	// 	return err
 	// }
-
-	for i := 0; i < 10000; i++ {
+	tableSize := 1000;
+	width := 500
+	for i := 0; i < tableSize; i++ {
 		name := "sam" + strconv.Itoa(i)
 		tup := Tuple{Desc: desc,
 			Fields: []DBValue{
@@ -41,29 +42,29 @@ func TestBTreeTime(t *testing.T) {
 	}
 
 	btree.init(tupleList)
-	btreeTime := 0
-	heapTime := 0
+	var btreeTime float64 = 0
+	var heapTime float64 = 0
 	iters := 1000
 	for i := 0; i < iters; i++ {
 		s := rand.NewSource(time.Now().UnixNano())
 		r := rand.New(s)
-		lval := r.Intn(9000)
-		width := r.Intn(100)
+		lval := r.Intn(40)
+		// width := r.Intn(100)
 		rval := lval + width
 		left, right := tupleList[lval], tupleList[rval]
 
-		btreeIter, _ := btree.SelectRange(left, right, tid)
-		heapfileIter, _ := heapfile.Iterator(tid)
 		// time b+tree range query
 		start := time.Now()
+		btreeIter, _ := btree.SelectRange(left, right, tid)
 		tup, _ := btreeIter()
 		for tup != nil {
 			tup, _ = btreeIter()
 		}
 		elapsed := time.Since(start)
-		btreeTime += int(elapsed)
+		btreeTime += float64(elapsed.Nanoseconds())
 		// time heapfile range query
 		start = time.Now()
+		heapfileIter, _ := heapfile.Iterator(tid)
 		tup, _ = heapfileIter()
 		count := 0
 		for tup != nil {
@@ -71,10 +72,10 @@ func TestBTreeTime(t *testing.T) {
 			count++
 		}
 		elapsed = time.Since(start)
-		heapTime += int(elapsed)
+		heapTime += float64(elapsed.Nanoseconds())
 	}
 	fmt.Println(heapfile.bufPool)
-	fmt.Println("Average heap Time is - ", heapTime/iters)
-	fmt.Println("Average b+tree Time is - ", btreeTime/iters)
+	fmt.Println("Average heap Time is - ", heapTime)
+	fmt.Println("Average b+tree Time is - ", btreeTime)
 	// return nil;
 }
